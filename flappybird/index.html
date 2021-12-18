@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>飞翔的小鸟</title>
+    <script src="./MngYou.js"></script>
+</head>
+<body>
+    
+</body>
+<script>
+onload = function(){
+var game = new MngYou.Game(0,0,288,505);
+var gameStart = -1;//未开始
+var dt = 0;
+var gameScore = 0;//游戏得分
+var topScore=0;//游戏最高分
+game.create(function(){
+    topScore = localStorage.getItem("topScore")==null?0:localStorage.getItem("topScore");
+    if (topScore==0) {
+        topScore = gameScore;
+    }
+    var bg = game.add.image(0,0,288,505,'./assets/images/background.png');
+    var ground = game.add.image(0,505-112,335,112,'./assets/images/ground.png');
+    var gameover = game.add.image(game.width/2-192/2,game.height/8,192,44,'./assets/images/gameover.png');
+    var scoreboard = game.add.image(game.width/2-226/2,game.height/2-114/2*1.5,226,114,'./assets/images/scoreboard.png');
+    var btnStart = game.add.image(game.width/2-104/2,game.height-58*3.3,104,58,'./assets/images/start-button.png');
+    btnStart.on('click',function(){
+        window.location.reload();
+    });
+    var textScore = game.add.text(0,0,gameScore,{fontSize:27});
+    textScore.x = scoreboard.x + scoreboard.width - textScore.width * 3;
+    textScore.y = 195;
+    textScore.update(function(){
+        textScore.setText(gameScore.toString());
+    },1000/16.7);
+    var textTopScore = game.add.text(0,0,topScore,{fontSize:27});
+    textTopScore.x = textScore.x;
+    textTopScore.y = 240;
+});
+game.create(function(){
+    var gameScene = game.add.group();
+    var bg = game.add.tilesprite(0,0,288,505,'./assets/images/background.png');
+    bg.autoScroll(-2,0);
+    var pipes = game.add.group();
+    var pipesUp = game.add.spritesheet(game.width,0,54,320,'./assets/images/pipes.png',54,320,2,1,2);//min -300  max -50
+    pipesUp.frame = 0;
+    pipesUp.y = game.rnd.between(-300,-50);
+    var pipesDown = game.add.spritesheet(game.width,0,54,320,'./assets/images/pipes.png',54,320,2,1,2);//min 100 max 350
+    pipesDown.y = pipesUp.y + 400;
+    pipesDown.frame = 1;
+    var pipesUp2 = game.add.spritesheet(0,0,54,320,'./assets/images/pipes.png',54,320,2,1,2);//min -300  max -50
+    pipesUp2.frame = 0;
+    pipesUp2.y = game.rnd.between(-300,-50);
+    pipesUp2.x = pipesUp.x + pipesUp.width + pipesUp.width * 2
+    var pipesDown2 = game.add.spritesheet(0,0,54,320,'./assets/images/pipes.png',54,320,2,1,2);//min 100 max 350
+    pipesDown2.y = pipesUp2.y + 400;
+    pipesDown2.frame = 1;
+    pipesDown2.x = pipesUp2.x;
+    pipes.add(pipesUp);
+    pipes.add(pipesUp2);
+    pipes.add(pipesDown);
+    pipes.add(pipesDown2);
+    var ground = game.add.tilesprite(0,505-112,335,112,'./assets/images/ground.png');
+    ground.autoScroll(-3,0);
+    var bird = game.add.spritesheet(game.width/3,game.height/4,34,24,'./assets/images/bird.png',34,24,3,1,3);
+    bird.t = 0;
+    bird.setAngle(10);
+    bird.i = 0;
+    var idT = bird.update(function(){
+        if (gameStart==-1) {
+            return false;
+        }
+        pipes.setAll('overlap',bird,function(){
+            gameScene.destroy();//游戏结束
+            localStorage.setItem("topScore",Math.max(gameScore,topScore));
+            bird.killTimer(idT);
+        });
+        for (var i = 0; i < pipes.children.length; i++) {
+            if (pipes.children[i].x+pipes.children[i].width<=0) {
+                pipes.children[i].x = game.width;
+            }
+            pipes.children[i].x -= 2;
+            if (pipes.children[i].x+pipes.children[i].width<=bird.x) {
+                dt+=1;
+                if (dt==1) {
+                    gameScore+=1;
+                }
+                if (dt==98) {
+                    dt = 0;
+                }
+                textScore.setText(gameScore);
+                textScore.x = game.width/2 - textScore.width/2;
+            }
+        }
+        if (gameStart==0) {//开始
+            bird.gravity({valueX:0,valueY:30,launch:true},true);
+            gameStart = 1;//开始后
+        }
+        if (bird.y<=0) {
+            bird.dt = 5;
+        }
+        if (bird.y+bird.height>=ground.y) {
+            gameScene.destroy();//游戏结束
+            localStorage.setItem("topScore",Math.max(gameScore,topScore));
+            bird.killTimer(idT);
+        }
+        bird.t++;
+        if (bird.t%1==0) {
+            bird.i++;
+            bird.setAngle(-10+bird.i);
+        }
+        if (bird.t%2==0) {
+            bird.frame = bird.t;
+        }
+    },1000/16.7);
+    document.on('click',function(){
+        bird.setAngle(-10);
+        bird.i = 0;
+        bird.dt -= 20;
+    });
+    var textScore = game.add.text(0,0,gameScore,{fontSize:36,color:'white'});
+    textScore.x = game.width/2 - textScore.width/2;
+    gameScene.add(bg);
+    gameScene.add(pipes);
+    gameScene.add(ground);
+    gameScene.add(bird);
+    gameScene.add(textScore);
+});
+game.create(function(){
+    var menuScene = game.add.group();
+    var bg = game.add.tilesprite(0,0,288,505,'./assets/images/background.png');
+    bg.autoScroll(-2,0);
+    var ground = game.add.tilesprite(0,505-112,335,112,'./assets/images/ground.png');
+    ground.autoScroll(-3,0);
+    var title = game.add.image(0,0,179,48,'./assets/images/title.png');
+    title.x = 30;
+    title.y = 50;
+    title.y_ = 50;
+    title.y__ = 100;
+    title.speedY = 1.5;
+    title.update(function(){
+        title.y += title.speedY;
+        bird.y = title.y + 9;
+        if (title.y>=title.y__) {
+            title.speedY = -title.speedY;
+        }
+        if (title.y<=title.y_) {
+            title.speedY = -title.speedY;
+        }
+    },1000/16.7);
+    var bird = game.add.spritesheet(title.x+title.width+12,title.y+9,34,24,'./assets/images/bird.png',34,24,3,1,3);
+    bird.dt = 0;
+    bird.update(function(){
+        bird.dt++;
+        if (bird.dt%2==0) {
+            bird.frame = bird.dt;
+        }
+    },1000/16.7);
+    var btnStart = game.add.image(0,0,104,58,'./assets/images/start-button.png');
+    btnStart.x = game.width/2-btnStart.width/2;
+    btnStart.y = game.height/2;
+    btnStart.on('click',function(){
+        menuScene.destroy();
+        gameStart = 0;
+    });
+    menuScene.add(bg);
+    menuScene.add(ground);
+    menuScene.add(title);
+    menuScene.add(bird);
+    menuScene.add(btnStart);
+});
+}
+</script>
+</html>
