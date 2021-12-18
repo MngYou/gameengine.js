@@ -1,0 +1,628 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8"><!--设置文字编码-->
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+	<title>Run Small Monster</title><!--设置标题文本-->
+	<link rel="stylesheet" href="./style.css"><!--样式表-->
+	<script src="./MngYou.js"></script>
+</head>
+<script>
+onload = function(){
+	//定义游戏变量
+	var start = -1;		//-1为菜单界面		0为选择界面		1为游戏界面		2为结束界面 		3为帮助界面
+
+	//Preload
+	var player1;
+	var player2;
+	var state1_back;
+	var state1_front;
+	var state2_back;
+	var state2_front;
+
+	var menuScene;
+	var bg;
+	var clickText;
+	
+	var chooseScene;
+	var choosePlayer = 0;
+	var chooseState = 0;
+	var choose_bg;
+	var choose_text;
+	var role_1;
+	var role_2;
+	var role_1_arrow;
+	var role_2_arrow;
+	var stateBg;
+	var logo;
+	var state1;
+	var state2;
+	var stateText;
+	
+	var mainScene;
+	var mainLogo;
+	var mainDistance;
+	var barTop;
+	var bg_back;
+	var bg_front;
+	var player;
+	var heart;
+	var hp;
+	var hps;
+	var hearts;
+	var Distance = 0;
+	var distanceText;
+	var btnSetting;
+	var btnStart;
+	var btnReStart;
+	var btnPause;
+	var btnHelp;
+	var enemys;
+	var enemy1;
+	var enemy2;
+	var enemy3;
+	var enemy;
+	var buff1s;
+	var buff2s;
+	var buff1; //产生小精灵
+	var buff2; //技能
+	
+	var overScene;
+	var gameover;
+
+	var helpScene;
+	var helpClose;
+
+	// audio
+	var bgm;
+	var clickSound;
+	var hp_Sound;
+	var hp__Sound;
+	var gameoverSound;
+	//创建游戏世界
+	var game = new MngYou.Game(0,0,800,600);
+	//键盘按键事件
+	document.on('keypress',function(e){
+		if (e.keyCode==13) window.close();	//回车键退出游戏
+		// if (e.keyCode==32) {				//空格键退出全屏
+		// 	game.fullScreen.exit();
+		// }
+	});
+	//启动全屏
+	// game.fullScreen.launch(document.documentElement);
+	game.preload(function(){
+		bgm = game.add.audio('./audio/bgm.ogg');
+		bgm.loop = true;
+		bgm.play();
+		clickSound = game.add.audio('./audio/choose.ogg');
+		// clickSound.play();
+		hp_Sound = game.add.audio('./audio/hp+.ogg');
+		// hp_Sound.play();
+		hp__Sound = game.add.audio('./audio/hp-.ogg');
+		// hp__Sound.play();
+		gameoverSound = game.add.audio('./audio/gameover.ogg');
+		// gameoverSound.play();
+
+	});
+	//创建游戏场景
+	game.create(function(){//menuScene
+		menuScene = game.add.group();//创建组(视作游戏场景)
+		bg = game.add.image(0,0,game.width,game.height,'./startScene/startSceneBackground.jpg');
+		clickText = game.add.image(0,0,295,23,'./startScene/clickToStart.png');
+		menuScene.add(bg);
+		menuScene.add(clickText);				//将游戏对象添加进组
+		menuScene.setZindex(1);
+		menuScene.on('click',btnStart);
+		function btnStart(){
+			clickSound.play();
+			start = 0;							//进入下一个场景界面的标记
+			menuScene.setVisible(false);		//隐藏掉本场景
+			menuScene.out('click',btnStart);
+			console.log('start:'+start);
+			console.log(game.world.centerX);
+			menuScene.destroy();
+		}
+	});
+	game.create(function(){//chooseScene
+		chooseScene = game.add.group();
+		choose_bg = game.add.image(0,0,game.width,game.height,'./chooseScene/background.jpg');
+		role_1 = game.add.image(0,0,159,138,'./chooseScene/role_1.png');
+		role_2 = game.add.image(0,0,148,146,'./chooseScene/role_2.png');
+		choose_text = game.add.image(0,0,242,22,'./chooseScene/text.png');
+		role_1_arrow = game.add.image(0,0,27,24,'./chooseScene/arrow.png');
+		role_2_arrow = game.add.image(0,0,27,24,'./chooseScene/arrow.png');
+		player1 = game.add.spritesheet(70*2,0,76,68,'./scene/player1.png',76,68,5,1,5).setVisible(false);
+		player2 = game.add.spritesheet(70*2,0,70,63,'./scene/player2.png',70,63,9,1,9).setVisible(false);
+		state1_back = game.add.image(0,0,game.width,game.height,'./scene/scene_bg.jpg').setVisible(false);
+		state1_front = game.add.image(0,0,game.width,game.height,'./scene/scene_front.png').setVisible(false);
+		state2_back = game.add.image(0,0,game.width,game.height,'scene/scene_bg2.jpg').setVisible(false);
+		state2_front = game.add.image(0,0,game.width,game.height,'./scene/scene_front2.png').setVisible(false);
+		chooseScene.add(choose_bg);
+		chooseScene.add(role_1);
+		chooseScene.add(role_2);
+		chooseScene.add(choose_text);
+		chooseScene.add(role_1_arrow);
+		chooseScene.add(role_2_arrow);
+		chooseScene.add(player1);
+		chooseScene.add(player2);
+		role_1_arrow.setVisible(false);
+		role_2_arrow.setVisible(false);
+		chooseScene.setVisible(false);
+		role_1.on('mouseover',function(){
+			role_1_arrow.setVisible(true);
+		});
+		role_1.on('mouseout',function(){
+			role_1_arrow.setVisible(false);
+		});
+		role_2.on('mouseover',function(){
+			role_2_arrow.setVisible(true);
+		});
+		role_2.on('mouseout',function(){
+			role_2_arrow.setVisible(false);
+		});
+		role_1.on('click',function(){
+			clickSound.play();
+			choosePlayer = 1;
+		});
+		role_2.on('click',function(){
+			clickSound.play();
+			choosePlayer = 2;
+		});
+		chooseScene.on('click',chooseSg);
+		function chooseSg(){
+			clickSound.play();
+			stateBg = choose_bg;
+			stateBg.setImage('./chooseScene/background_2.jpg');
+			logo = game.add.image(0,0,window.innerWidth*0.1381,window.innerHeight*0.1257,'./chooseScene/logo.png');
+			state1 = game.add.image(0,0,window.innerWidth*0.195,window.innerHeight*0.2196,'./chooseScene/state1.png');
+			state2 = game.add.image(0,0,window.innerWidth*0.18875,window.innerHeight*0.2222,'./chooseScene/state2.png');
+			stateText = game.add.image(0,0,window.innerWidth*0.124375,window.innerHeight*0.02381,'./chooseScene/stateText.png');
+			MngYou.Display.Align.In.TopCenter(logo,stateBg);
+			logo.y += logo.height/2;
+			MngYou.Display.Align.In.Center(state1,stateBg);
+			state1.y -= state1.height*0.7;
+			MngYou.Display.Align.In.Center(state2,stateBg);
+			state2.y += state2.height*0.4;
+			MngYou.Display.Align.In.Center(stateText,stateBg);
+			stateText.y = state2.y + state2.height +stateText.height*3;
+			chooseScene.add(stateBg);
+			chooseScene.add(logo);
+			chooseScene.add(state1);
+			chooseScene.add(state2);
+			chooseScene.add(stateText);
+			state1.on('click',function(){
+				chooseState = 1;
+				clickSound.play();
+				btnStart();
+			});
+			state2.on('click',function(){
+				chooseState = 2;
+				clickSound.play();
+				btnStart();
+			});
+		}
+		function btnStart(){
+			start = 1;							//进入下一个场景界面的标记
+			chooseScene.setVisible(false);		//隐藏掉本场景
+			console.log('start:'+start);
+			console.log(game.world.centerX);
+			console.log('role:' + choosePlayer + 'state:' + chooseState);
+			chooseScene.destroy();				//删掉dom元素不影响缓存			
+			player.dt = 81;				
+			game.code.execute(function(){
+				document.documentElement.click();
+			},6);
+			game.world.sleep(100,function(){
+				btnHelp.click();
+			});
+		}
+	});
+	game.create(function(){//mainScene
+		mainScene = game.add.group();
+		hearts = game.add.group().setVisible(false);
+		hps = game.add.group();
+		enemys = game.add.group();
+		buff1s = game.add.group();
+		buff2s = game.add.group();
+		var border = game.add.image(0,0,game.width,game.height,'./scene/border.png');
+		bg_back = game.add.tilesprite(0,0,game.width,game.height,'./scene/scene_bg.jpg');
+		bg_front = game.add.image(0,0,game.width,game.height,'./scene/scene_front.png');
+		mainLogo = game.add.image(0,0,138*0.8,60*0.8,'./scene/logo.png');
+		mainDistance = game.add.image(0,0,84,16,'./scene/distanceText.png');
+		barTop = game.add.image(0,0,game.width,105,'./scene/barTop.png');
+		distanceText = game.add.text(0,0,' '+Distance,{fontSize:30,color:'white'}).setAlpha(0.5);
+		player = game.add.spritesheet(70*2,270,70,63,'./scene/player2.png',70,63,9,1,9).setVisible(false);
+		heart = game.add.image(0,0,27,31,'./scene/heart.png');
+		hp = game.add.image(0,0,47,35,'./scene/hp.png');
+		MngYou.Display.Align.In.Center(hp,game).y = game.height/13;
+		btnSetting = game.add.image(0,0,24,26,'./scene/btnSetting.png');
+		btnHelp = game.add.image(0,0,25,24,'./scene/btnHelp.png').setVisible(false);
+		btnStart = game.add.image(0,0,20,21,'./scene/btnStart.png').setVisible(false);
+		btnClose = game.add.image(0,0,20,21,'./scene/btnClose.png').setVisible(false);
+		btnReStart = game.add.image(0,0,20,21,'./scene/btnReStart.png').setVisible(false);
+		btnPause = game.add.image(0,0,20,21,'./scene/btnPause.png').setVisible(false);
+		btnPause.on('click',function(){
+			clickSound.play();
+			game.paused();
+		});
+		btnStart.on('click',function(){
+			clickSound.play();
+			game.resume();
+		});
+		btnClose.on('click',function(){
+			close();
+		});
+		btnReStart.on('click',function(){
+			clickSound.play();
+			window.location.reload();
+		});
+		btnHelp.on('click',function(){
+			clickSound.play();
+			game.paused();
+			player.setVisible(false);
+			hearts.setVisible(false);
+			enemys.setVisible(false);
+			game.create(function(){//helpScene
+				helpScene = game.add.group();
+				helpContext = game.add.image(0,0,game.width,game.height,'./helpScene/helpContext.png');
+				helpClose = game.add.image(0,0,70,72,'./helpScene/helpClose.png');
+				helpClose.x = helpClose.width/3;
+				helpClose.y = helpClose.height * 2.1;
+				helpContext.width = document.body.offsetWidth;
+				helpContext.height = window.innerHeight;
+				MngYou.Display.Align.To.BottomLeft(helpClose,barTop);
+				helpClose.x += helpClose.width/5;
+				helpClose.y += helpClose.height/5;
+				helpScene.add(helpContext);
+				helpScene.add(helpClose);
+				helpClose.on('click',function(){
+					clickSound.play();
+					helpScene.destroy();
+					player.setVisible(true);
+					hearts.setVisible(true);
+					enemys.setVisible(true);
+					game.resume();
+				});
+			});
+		});
+		btnSetting.on('click',function(){
+			clickSound.play();
+			//visible
+			btnStart.setVisible(!false);
+			btnClose.setVisible(!false);
+			btnReStart.setVisible(!false);
+			btnPause.setVisible(!false);
+			btnHelp.setVisible(!false);
+		});
+		btnSetting.on('dblclick',function(){
+			clickSound.play();
+			//visible
+			btnStart.setVisible(false);
+			btnClose.setVisible(false);
+			btnReStart.setVisible(false);
+			btnPause.setVisible(false);
+			btnHelp.setVisible(false);
+		});
+		// player.gravity({valueX:0,valueY:300,boolean:true});
+		player.gravity({valueX:0,valueY:30,launch:false});
+		// player.animsAllPlay(5,true);
+		//player.animsPlay(2,3,true,{start:0,end:9});
+		player.animsAllPlay(5,true);
+		mainScene.add(bg_back);
+		mainScene.add(bg_front);
+		mainScene.add(border);
+		mainScene.add(mainLogo);
+		mainScene.add(mainDistance);
+		mainScene.add(barTop);
+		mainScene.add(distanceText);
+		mainScene.add(player);
+		mainScene.add(btnSetting);
+		mainScene.add(btnHelp);
+		mainScene.add(btnStart);
+		mainScene.add(btnClose);
+		mainScene.add(btnReStart);
+		mainScene.add(btnPause);
+		mainScene.add(enemys);
+		mainScene.add(hps);
+		mainScene.add(hearts);
+		hearts.add(heart);
+		hps.add(hp);
+		hps.setZindex(1);
+		barTop.setZindex(1);
+		bg_front.setZindex(1);
+		border.setZindex(1);
+		btnSetting.setZindex(1);
+		btnHelp.setZindex(1);
+		btnStart.setZindex(1);
+		btnClose.setZindex(1);
+		btnReStart.setZindex(1);
+		btnPause.setZindex(1);
+		mainLogo.setZindex(2);
+		mainDistance.setZindex(2);
+		distanceText.setZindex(1);
+		mainScene.getChildAt(0).autoScroll(-3,0);
+		mainScene.setVisible(false);
+		var i = 0;
+		document.on('click',function(){//飘然而行
+			if (player.y <= barTop.height) {
+				player.dt = 0;
+				player.y = barTop.y + barTop.height;
+				return false;
+			}
+			player.dt -= 10;//鼠标左键单击控制主角回升
+		});
+	});
+	game.create(function(){//overScene
+		
+	});
+	//实现屏幕全屏适配方案
+	reSetGameSize();
+	//监听浏览器屏幕大小变化
+	window.on('resize',function(){
+		reSetGameSize();
+	});
+	function reSetGameSize(){
+		game.scaleManager.setAll();
+		MngYou.Display.Align.In.Center(clickText,bg);
+		clickText.y = clickText.height * 19;
+		MngYou.Display.Align.In.Center(role_1,choose_bg);
+		role_1.x -= role_1.width/1.5;
+		role_1.y -= role_1.height/1.5;
+		MngYou.Display.Align.In.Center(role_2,choose_bg);
+		role_2.x += role_2.width/1.5;
+		role_2.y -= role_2.height/1.6;
+		MngYou.Display.Align.In.BottomCenter(choose_text,choose_bg);
+		choose_text.y -= choose_text.height*7;
+		role_1_arrow.x = role_1.x + role_1.width/2.5;
+		role_1_arrow.y = role_1.y + role_1.height*1.1;
+		role_2_arrow.x = role_2.x + role_2.width/2.5;
+		role_2_arrow.y = role_2.y + role_2.height*1.06;
+		if (stateBg) {
+			MngYou.Display.Align.In.TopCenter(logo,stateBg);
+			logo.y += logo.height/2;
+			MngYou.Display.Align.In.Center(state1,stateBg);
+			state1.y -= state1.height*0.7;
+			MngYou.Display.Align.In.Center(state2,stateBg);
+			state2.y += state2.height*0.4;
+			MngYou.Display.Align.In.Center(stateText,stateBg);
+			stateText.y = state2.y + state2.height +stateText.height;
+		}
+		MngYou.Display.Align.In.RightCenter(btnSetting,bg_back);
+		btnSetting.x = bg_back.width - btnSetting.width*1.7;
+		btnSetting.y = btnSetting.height * 5;
+		MngYou.Display.Align.In.RightCenter(btnStart,bg_back);
+		btnStart.x = bg_back.width - btnSetting.width*1.7*1.5;
+		btnStart.y = btnSetting.height * 5;
+		MngYou.Display.Align.In.RightCenter(btnClose,bg_back);
+		btnClose.y = btnStart.y;
+		btnClose.x = bg_back.width - btnSetting.width*1.7*3;
+		MngYou.Display.Align.In.RightCenter(btnPause,bg_back);
+		btnPause.x = bg_back.width - btnSetting.width*1.7*2;
+		btnPause.y = btnSetting.height * 5;
+		MngYou.Display.Align.In.RightCenter(btnReStart,bg_back);
+		btnReStart.x = bg_back.width - btnSetting.width*1.7*2.5;
+		btnReStart.y = btnSetting.height * 5;
+		MngYou.Display.Align.In.RightCenter(btnHelp,bg_back);
+		btnHelp.x = bg_back.width - btnSetting.width*1.7;
+		btnHelp.y = btnSetting.height * 5 + btnSetting.height*1.1;
+		MngYou.Display.Align.In.BottomRight(mainLogo,barTop).x -= mainLogo.width/3;
+		mainLogo.y -= mainLogo.height/9;
+		MngYou.Display.Align.In.BottomLeft(mainDistance,barTop).x += mainDistance.width/4;
+		mainDistance.y -= mainLogo.height/9/2;
+		MngYou.Display.Align.To.RightCenter(distanceText,mainDistance);
+		for (var index = 0; index < hearts.children.length; index++) {
+			hearts.children[index].width = 27;
+			hearts.children[index].height = 31;
+			hps.children[index].width = 47;
+			hps.children[index].height = 37;
+		}
+		if (gameover) {
+			MngYou.Display.Align.In.Center(gameover,bg_back);
+			gameover.y -= gameover.height*2;
+		}
+		if (choosePlayer==1) {
+			player.width = 76;
+			player.height = 68;
+		}
+		if (choosePlayer==0||choosePlayer==2) {
+			player.width = 70;
+			player.height = 63;
+		}
+		for (var i = 0; i < enemys.children.length; i++) {
+			if (enemys.children[i].name=='enemy1') {
+				enemys.children[i].width = 72;
+				enemys.children[i].height = 22;
+			}
+			if (enemys.children[i].name=='enemy2') {
+				enemys.children[i].width = 207/3;
+				enemys.children[i].height = 51;
+			}
+			if (enemys.children[i].name=='enemy3') {
+				enemys.children[i].width = 72;
+				enemys.children[i].height = 22;
+			}
+			if (enemys.children[i].name=='enemy4') {
+				enemys.children[i].width = 207/3;
+				enemys.children[i].height = 51;
+			}
+			if (enemys.children[i].name=='enemy5') {
+				enemys.children[i].width = 33.8;
+				enemys.children[i].height = 44;
+			}
+		}
+	}
+	window.dt = 0;
+	game.update(function(){
+		if (game.GM.runner==false) {return false;}
+		if (start==0) {
+			//console.log(this.dt++);
+			chooseScene.setVisible(true);
+			chooseScene.setZindex(1);
+		}
+		if (start==1) {
+			this.dt++;
+			Distance = this.dt/100;
+			mainScene.setVisible(true);
+			if (chooseState==1) {
+				bg_back.setImage(state1_back.imageSrc);
+				bg_front.setImage(state1_front.imageSrc);
+			}
+			if (chooseState==2) {
+				bg_back.setImage(state2_back.imageSrc);
+				bg_front.setImage(state2_front.imageSrc);
+			}
+			if (choosePlayer==1) {
+				player.setImage(player1.imageSrc);
+				player.setWidth(76);
+				player.setHeight(68);
+				player.frameWidth = 76;
+				player.frameHeight = 68;
+				player.frameMax = 5;
+				player.row = 1;
+				player.columns = 5;
+				player.rate = 2;
+			}
+			if (choosePlayer==2 || choosePlayer==0) {
+				player.setImage(player2.imageSrc);
+				player.setWidth(70);
+				player.setHeight(63);
+				player.rate = 5;
+			}
+			player.launch = true;
+			if (hearts.children.length>0) {
+				hearts.children[0].style.left = player.x - hearts.children[0].width + 'px';
+				hearts.children[0].style.top = player.y + 'px';
+				for (var i = 1; i < hearts.children.length; i++) {//需要为组增加length属性
+					hearts.children[i].style.left = hearts.children[i-1].offsetLeft - hearts.children[i].offsetWidth + 'px';
+					hearts.children[i].style.top = player.y +'px';
+					hps.children[i].style.left = hps.children[i-1].offsetLeft + hps.children[i].offsetWidth + 'px';
+				}//克隆返回的对象为DOM 只能进行DOM操作 非MngYou对象 作者表示我很桑心#^_^*;
+			}
+			distanceText.setText(' '+Distance+'m');
+			//游戏buff 碰撞检测
+			if (this.dt % 60 == 0) {
+				var rnd = 0;
+				rnd = game.rnd.between(0,1);
+				if (rnd==0) {
+					//生命值 小精灵
+					buff1 = game.add.image(document.body.offsetWidth,game.rnd.between(barTop.height,game.height-38-barTop.height/2),43,38,'./scene/buff1.png');
+						// buff1.gravity({valueX:-100,valueY:0,launch:true});
+						buff1.velocity({velocityX:-150,velocityY:0,launch:true});
+						buff1s.add(buff1);
+				}
+				if (rnd==0) {
+					//技能buff
+				}
+			}
+			//游戏逻辑 生成敌人 碰撞检测
+			if (this.dt%60==0) {
+				//单独生成一个原创的怪物素材
+				var enemy4 = game.add.spritesheet(document.body.offsetWidth,game.rnd.between(barTop.height,game.height-51),207/3,51,'./scene/enemy4.png',207/3,51,3,1,3);
+				enemy4.name = 'enemy4';
+				enemy = enemy4;
+				// enemy.gravity({valueX:-100,valueY:0,launch:true});
+				enemy.velocity({velocityX:-150,velocityY:0,launch:true});
+				enemys.add(enemy);
+				enemy.animsAllPlay(3,true);
+			}
+			if (this.dt%60==0) {
+				//单独生成一个原创的怪物素材
+				enemy2 = game.add.spritesheet(document.body.offsetWidth,game.rnd.between(barTop.height,game.height-51),207/3,51,'./scene/enemy2.png',207/3,51,3,1,3);
+				// enemy2.animsAllPlay(3,true);
+				// enemys.add(enemy2);
+				enemy2.name = 'enemy2';
+				enemy = enemy2;
+				// enemy.gravity({valueX:-50,valueY:0,launch:true});
+				enemy.velocity({velocityX:-150,velocityY:0,launch:true});
+				enemys.add(enemy);
+				enemy.animsAllPlay(3,true);
+			}
+			if (this.dt % 15 == 0) {
+				var rnd = 0;
+				rnd = game.rnd.between(0,2);
+				if (rnd==0) {
+					enemy1 = game.add.spritesheet(document.body.offsetWidth,game.rnd.between(barTop.height,game.height-22),68,22,'./scene/enemy1.png',68,22,2,1,2);
+					// enemy1.animsAllPlay(3,true);
+					// enemys.add(enemy1);
+					enemy1.name = 'enemy1';
+					enemy = enemy1;
+				}
+				if (rnd==1) {
+					enemy5 = game.add.spritesheet(document.body.offsetWidth,game.rnd.between(barTop.height,game.height-44),33.8,44,'./scene/enemy5.png',32,44,5,1,5);
+					enemy5.name = 'enemy5';
+					enemy = enemy5;
+				}
+				if (rnd==2) {
+					enemy3 = game.add.spritesheet(document.body.offsetWidth,game.rnd.between(barTop.height,game.height-22),68,22,'./scene/enemy3.png',68,22,2,1,2);
+					// enemy3.animsAllPlay(3,true);
+					// enemys.add(enemy3);
+					enemy3.name = 'enemy3';
+					enemy = enemy3;
+				}
+				// enemy.gravity({valueX:-100,valueY:0,launch:true});
+				enemy.velocity({velocityX:-150,velocityY:0,launch:true});
+				enemys.add(enemy);
+				enemy.animsAllPlay(3,true);
+			}
+			var enmy;
+			for (var i = 0; i < enemys.children.length; i++) {
+				enmy = enemys.children[i];
+				game.world.collider(player,enemys.children[i],isCollide)
+			}
+			function isCollide(){
+				console.log(true);
+				//减少小精灵(血量)
+				hp__Sound.play();
+				enmy.destroy();
+				if (hearts.children.length>0) {
+					hearts.children[hearts.children.length-1].destroy();
+					hps.children[hps.children.length-1].destroy();
+				} else {
+					player.destroy();
+					console.log('gameover');
+					start = 2;
+				}
+			}
+			if (!game.world.isExist(player)) {
+				console.log('player is dead!');
+				console.log('gameover');
+				start = 2;
+			}
+			if (player.y < barTop.height) {
+				player.dt = 0;
+				player.y = barTop.y + barTop.height;
+			}
+			var buff_;
+			for (var i = 0; i < buff1s.children.length; i++) {
+				buff_ = buff1s.children[i];
+				game.world.collider(player,buff1s.children[i],isCollider)
+			}
+			function isCollider(){
+				buff_.destroy();
+				hp_Sound.play();
+				if (hearts.children.length>0) {//当角色与怪物碰撞将子元素移除直到组空再移除角色
+					heart.cloneSelf(true);//吃到buff1增加小精灵视作血条
+					hp.cloneSelf(true);
+				} else {
+					hearts.appendChild(heart);
+					hps.appendChild(hp);
+				}
+			}
+			if (start==2) {
+				enemys.destroy();
+				//游戏结束界面
+				game.create(function(){
+					gameoverSound.play();
+					gameover = game.add.image(0,0,217*1.5,47*1.5,'./scene/gameover.png');
+					mainScene.add(gameover);
+					MngYou.Display.Align.In.Center(gameover,bg_back);
+					gameover.y -= gameover.height;
+					btnSetting.click();
+				});
+				game.paused();
+			}
+		}
+	},60);
+}
+</script>
+</html>
